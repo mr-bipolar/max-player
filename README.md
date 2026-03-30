@@ -1,39 +1,40 @@
-# mpv for Android
+# Max Player for Android
 
 [![Build Status](https://github.com/mpv-android/mpv-android/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/mpv-android/mpv-android/actions/workflows/build.yml)
 
+Max Player is an Android video player based on MPV engine.
 mpv-android is a video player for Android based on [libmpv](https://github.com/mpv-player/mpv).
 
 ## Features
+- MPV based playback
+- Supports M3U playlists
+- Hardware acceleration
+- Android TV support
+- External URL streaming
 
-* Hardware and software video decoding
-* Gesture-based seeking, volume/brightness control and more
-* libass support for styled subtitles
-* Secondary (or dual) subtitle support
-* High-quality rendering with advanced settings (scalers, debanding, interpolation, ...)
-* Play network streams with the "Open URL" function
-* Background playback, Picture-in-Picture, keyboard input supported
+## Screenshots
+<img src="https://github.com/mr-bipolar/max-player/blob/main/0sPhG93KzONL_1024_500.png" width="600px"/> 
 
-### Library?
+[Hotpot Ai feature-graphic](https://hotpot.ai)
 
-mpv-android is **not** a library/module (AAR) you can import into your app.
+<img src="https://github.com/mr-bipolar/max-player/blob/main/tv.gif" width="600px"/>
 
-If you'd like to use libmpv in your app you can use our code as inspiration.
-The important parts are [`MPVLib`](app/src/main/java/com/aaronmaxlab/maxplayer/MPVLib.kt), [`BaseMPVView`](app/src/main/java/com/aaronmaxlab/maxplayer/BaseMPVView.kt) and the [native code](app/src/main/jni/).
-Native code is built by [these scripts](buildscripts/).
+## Open Source
+
+This app is based on mpv-android:
+[MPV Android](https://github.com/mpv-android/mpv-android)
+
+Licensed under GNU GPL v3.
+
+### Library
+
+[MPV](https://mpv.io)
 
 ## Downloads
 
-You can download mpv-android from the [Releases section](https://github.com/mpv-android/mpv-android/releases) or
+You can download Max Player from 
 
-[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=is.xyz.mpv)
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="80">](https://play.google.com/store/apps/details?id=com.aaronmaxlab.maxplayer)
 
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/is.xyz.mpv)
-
-**Note**: Android TV is supported, but only available on F-Droid or by installing the APK manually.
-
-## Building from source
-
-Take a look at the [README](buildscripts/README.md) inside the `buildscripts` directory.
-
-Some other documentation can be found at this [link](http://mpv-android.github.io/mpv-android/).
+## License
+This project is licensed under the GPL v3 License.
