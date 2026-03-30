@@ -26,3 +26,4 @@ app/build/
 
 # GDB (optional)
 .gdb_historyapp/src/main/obj/
+app/src/main/obj/
