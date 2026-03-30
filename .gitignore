@@ -1,0 +1,28 @@
+# Gradle
+.gradle/
+build/
+
+# Local config
+local.properties
+
+# IDE
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*~
+*.log
+
+# NDK / CMake
+.externalNativeBuild/
+.cxx/
+
+# Debug / release outputs
+app/build/
+
+# GDB (optional)
+.gdb_history

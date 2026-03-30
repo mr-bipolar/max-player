@@ -1,0 +1,118 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+ext.abiCodes = ["armeabi-v7a": 1, "arm64-v8a": 2, "x86":3, "x86_64":4]
+ext.universalBase = 8000
+
+android {
+    namespace  = 'com.aaronmaxlab.maxplayer'
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "com.aaronmaxlab.maxplayer"
+        minSdk = 23
+        targetSdk = 35
+
+        versionCode = 16
+        versionName = "2.6"
+
+        vectorDrawables.useSupportLibrary = true
+
+        ndk {
+            abiFilters  "armeabi-v7a", "arm64-v8a" , "x86"
+        }
+    }
+
+    flavorDimensions "default"
+    productFlavors {
+        "default" {
+            isDefault true
+        }
+        api29 {
+            targetSdkVersion 29
+            versionNameSuffix "-oldapi"
+        }
+    }
+
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
+        compose true
+    }
+
+    splits {
+        abi {
+            enable true
+            reset()
+            // include only the ABIs that were actually built
+            project.ext.abiCodes.each { abi, _ ->
+                if (new File(project.projectDir, "src/main/jniLibs/${abi}").exists())
+                    include(abi)
+            }
+            universalApk true // build an APK with all ABIs too
+        }
+    }
+
+    // https://youtrack.jetbrains.com/issue/KT-55947
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    tasks.withType(KotlinCompile).tap {
+        configureEach {
+            kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+        }
+    }
+
+}
+
+
+
+// Map versionCode so each ABI gets a different one
+// e.g. x86 with version 21 gets a versionCode of 3021
+
+import com.android.build.OutputFile
+
+android.applicationVariants.all { variant ->
+    variant.outputs.all { output ->
+        def abi = output.getFilter(OutputFile.ABI)
+        def base = project.ext.abiCodes.get(abi)
+        if (base != null) {
+            output.versionCodeOverride = base * 1000 + variant.versionCode
+        } else {
+            output.versionCodeOverride = universalBase + variant.versionCode
+        }
+    }
+}
+
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.recyclerview:recyclerview:1.4.0'
+    implementation 'androidx.media:media:1.7.1'
+    implementation 'androidx.preference:preference-ktx:1.2.1'
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'androidx.activity:activity-ktx:1.12.3'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation "com.google.android.material:material:1.13.0"
+    implementation "com.github.bumptech.glide:glide:5.0.5"
+    implementation "com.squareup.okhttp3:okhttp:5.3.2"
+    implementation 'androidx.activity:activity:1.8.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
+    implementation 'androidx.activity:activity-compose:1.12.4'
+    implementation platform('androidx.compose:compose-bom:2024.09.00')
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-graphics'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.material3:material3'
+    androidTestImplementation platform('androidx.compose:compose-bom:2024.09.00')
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+
+}

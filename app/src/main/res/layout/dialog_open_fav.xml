@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+   >
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add to Collection"
+        android:gravity="center"
+        android:padding="8dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/accent"
+        android:textSize="18dp"
+        android:textStyle="bold"
+        android:fontFamily="@font/inter_medium"
+        />
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <RadioButton
+            android:id="@+id/option1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/switch_thumb_selector"
+            android:fontFamily="@font/inter_medium"
+            android:padding="10dp"
+            android:text="Channel"
+            android:textColor="@color/switch_thumb_selector"
+            android:textSize="16sp" />
+
+        <RadioButton
+            android:id="@+id/option2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_medium"
+            android:buttonTint="@color/switch_thumb_selector"
+            android:padding="10dp"
+            android:text="Movies"
+            android:textColor="@color/switch_thumb_selector"
+            android:textSize="16sp" />
+
+        <RadioButton
+            android:id="@+id/option3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_medium"
+            android:buttonTint="@color/switch_thumb_selector"
+            android:padding="10dp"
+            android:text="Series"
+            android:textColor="@color/switch_thumb_selector"
+            android:textSize="16sp" />
+
+        <RadioButton
+            android:id="@+id/option4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_medium"
+            android:buttonTint="@color/switch_thumb_selector"
+            android:padding="10dp"
+            android:text="Sports"
+            android:textColor="@color/switch_thumb_selector"
+            android:textSize="16sp" />
+
+        <RadioButton
+            android:id="@+id/option5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_medium"
+            android:buttonTint="@color/switch_thumb_selector"
+            android:padding="10dp"
+            android:text="News"
+            android:textColor="@color/switch_thumb_selector"
+            android:textSize="16sp" />
+
+        <RadioButton
+            android:id="@+id/option6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_medium"
+            android:buttonTint="@color/switch_thumb_selector"
+            android:padding="10dp"
+            android:text="Favourite"
+            android:textColor="@color/switch_thumb_selector"
+            android:textSize="16sp" />
+
+    </RadioGroup>
+
+</LinearLayout>

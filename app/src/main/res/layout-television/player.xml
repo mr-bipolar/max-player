@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_dark_gradient"
+    android:fitsSystemWindows="true"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Video Player Container -->
+    <FrameLayout
+        android:id="@+id/playerFrameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="#102145"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <ImageButton
+            android:id="@+id/backBtn"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="center|start"
+            android:layout_marginStart="32dp"
+            android:background="@drawable/bg_rounded"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="12dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/back_arrow"
+            android:tint="@color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="UseAppTint" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|start"
+            android:layout_marginLeft="120sp"
+            android:fontFamily="@font/inter_medium"
+            android:text="Playlist"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|end"
+            android:layout_marginRight="120sp"
+            android:fontFamily="@font/inter_medium"
+            android:text="Bookmark"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/favBtn"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_gravity="right|center"
+            android:padding="12dp"
+            android:background="@drawable/bg_rounded"
+            android:src="@drawable/bookmark_add"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:nextFocusDown="@id/fullScreenBtn"
+            android:layout_marginEnd="32dp"
+            android:clickable="true"
+            tools:ignore="UseAppTint"
+            android:tint="@color/white" />
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/playerBottomFrameLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/playerFrameLayout">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="220dp"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:background="@color/sub_header_color">
+
+                    <TextView
+                        android:id="@+id/textView3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/inter_medium"
+                        android:text="Category"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="18dp" />
+                </FrameLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/categoryRecycler"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:descendantFocusability="afterDescendants"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:nextFocusRight="@id/channelRecycler" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:background="@color/sub_header_color">
+
+                    <TextView
+                        android:id="@+id/textView21"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/inter_medium"
+                        android:text="Channels"
+                        android:textAlignment="center"
+                        android:textColor="@color/white"
+                        android:textSize="18dp" />
+                </FrameLayout>
+
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <include
+                        android:id="@+id/loadingOverlay"
+                        layout="@layout/view_loading" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/channelRecycler"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:descendantFocusability="afterDescendants"
+                        android:focusable="false"
+                        android:nextFocusRight="@id/relativeLayout" />
+                </FrameLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/relativeLayout"
+                android:layout_width="500dp"
+                android:layout_height="300dp"
+                android:padding="20dp">
+
+                <!-- MPV Video View -->
+                <com.aaronmaxlab.maxplayer.MPVView
+                    android:id="@+id/player"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <!-- Overlay container for gestures, titles, and controls -->
+
+                <RelativeLayout
+                    android:id="@+id/outside"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <!-- Top controls and title -->
+                    <LinearLayout
+                        android:id="@+id/top_controls"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#55000000"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="8dp">
+
+                        <ImageButton
+                            android:id="@+id/topLockBtn"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"
+                            app:srcCompat="@drawable/ic_lock_24dp"
+                            app:tint="@color/tint_normal" />
+
+                        <TextView
+                            android:id="@+id/fullTitleTextView"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:ellipsize="middle"
+                            android:gravity="center"
+                            android:singleLine="true"
+                            android:textColor="@android:color/white"
+                            android:textSize="16sp"
+                            tools:text="Video Title" />
+
+                        <ImageButton
+                            android:id="@+id/topPiPBtn"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"
+                            app:srcCompat="@drawable/ic_picture_in_picture_24dp"
+                            app:tint="@color/tint_normal" />
+
+                        <ImageButton
+                            android:id="@+id/topMenuBtn"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"
+                            app:srcCompat="@drawable/ic_settings_black_24dp"
+                            app:tint="@color/tint_normal" />
+
+                        <ImageButton
+                            android:id="@+id/fullScreenBtn"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="4dp"
+                            app:srcCompat="@drawable/fullscreen_24"
+                            app:tint="@color/tint_normal" />
+                    </LinearLayout>
+
+                    <!-- Gesture Overlay -->
+                    <TextView
+                        android:id="@+id/gestureTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:shadowColor="#000000"
+                        android:shadowRadius="4"
+                        android:textColor="#FFFFFF"
+                        android:textSize="36sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        tools:text="[gesture]" />
+
+                    <!-- Stats TextView -->
+                    <TextView
+                        android:id="@+id/statsTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_marginStart="16dp"
+                        android:shadowColor="#000000"
+                        android:shadowDx="1"
+                        android:shadowDy="1"
+                        android:shadowRadius="1"
+                        android:textColor="#00FF00"
+                        android:visibility="gone"
+                        tools:text="60 FPS" />
+                    <!-- Unlock button -->
+                    <ImageButton
+                        android:id="@+id/unlockBtn"
+                        android:layout_width="48dp"
+                        android:layout_height="52dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_margin="24dp"
+                        android:visibility="gone"
+                        app:srcCompat="@drawable/ic_lock_open_24dp" />
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ProgressBar
+                            android:id="@+id/play_progress"
+                            style="?android:attr/progressBarStyleLarge"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_gravity="center"
+                            android:indeterminate="true"
+                            android:indeterminateTint="@color/white"
+                            android:indeterminateTintMode="src_in" />
+
+                    </FrameLayout>
+
+
+                    <!-- Bottom Controls -->
+                    <LinearLayout
+                        android:id="@+id/controls"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:background="#55000000"
+                        android:nextFocusLeft="@id/channelRecycler"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <!-- Title group -->
+                        <LinearLayout
+                            android:id="@+id/controls_title_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:id="@+id/titleTextView"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:textColor="@color/tint_normal"
+                                android:textSize="24sp"
+                                android:visibility="gone"
+                                tools:text="Song Title" />
+
+                            <TextView
+                                android:id="@+id/minorTitleTextView"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:textColor="@color/tint_normal"
+                                android:textSize="14sp"
+                                android:visibility="gone"
+                                tools:text="Artist / Album" />
+                        </LinearLayout>
+
+                        <!-- Seekbar + Playback Position -->
+                        <LinearLayout
+                            android:id="@+id/controls_seekbar_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <ImageButton
+                                android:id="@+id/prevBtn"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                app:srcCompat="@drawable/ic_skip_previous_black_24dp"
+                                app:tint="@color/tint_normal" />
+
+                            <TextView
+                                android:id="@+id/playbackPositionTxt"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:padding="8dp"
+                                android:textColor="@android:color/white"
+                                tools:text="00:00" />
+
+                            <SeekBar
+                                android:id="@+id/playbackSeekbar"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:minHeight="24dp"
+                                android:progressDrawable="@drawable/seekbar"
+                                android:thumbTint="@color/accent" />
+
+
+                            <TextView
+                                android:id="@+id/playbackDurationTxt"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:padding="8dp"
+                                android:textColor="@color/white"
+                                tools:text="13:37" />
+
+
+                            <ImageButton
+                                android:id="@+id/nextBtn"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                app:srcCompat="@drawable/ic_skip_next_black_24dp"
+                                app:tint="@color/tint_normal" />
+                        </LinearLayout>
+
+                        <!-- Playback Buttons Group -->
+                        <LinearLayout
+                            android:id="@+id/controls_button_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <ImageButton
+                                android:id="@+id/cycleAudioBtn"
+                                style="?buttonBarButtonStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:srcCompat="@drawable/ic_audiotrack_black_24dp"
+                                app:tint="@color/tint_normal" />
+
+                            <ImageButton
+                                android:id="@+id/cycleSubsBtn"
+                                style="?buttonBarButtonStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:srcCompat="@drawable/ic_subtitles_black_24dp"
+                                app:tint="@color/tint_normal" />
+
+                            <ImageButton
+                                android:id="@+id/playBtn"
+                                style="?buttonBarButtonStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                app:tint="@color/tint_normal"
+                                tools:src="@drawable/ic_play_arrow_black_24dp" />
+
+                            <Button
+                                android:id="@+id/cycleDecoderBtn"
+                                style="?buttonBarButtonStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/white"
+                                tools:text="HW+" />
+
+                            <Button
+                                android:id="@+id/cycleSpeedBtn"
+                                style="?buttonBarButtonStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/white"
+                                tools:text="1.00X" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvChannelName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/inter"
+                    android:gravity="left"
+                    android:paddingHorizontal="18dp"
+                    android:text="Live TV"
+                    android:layout_gravity="center"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/fullTVScreen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="22dp"
+                    android:textColor="@color/white"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:drawablePadding="10dp"
+                    android:padding="10dp"
+                    android:layout_margin="10dp"
+                    android:drawableTint="@color/white"
+                    android:background="@android:color/transparent"
+                    android:textAllCaps="true"
+                    android:drawableStart="@drawable/ic_aspect_ratio"
+                    android:text="Full Screen" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/playerBottomFrameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:paddingHorizontal="40dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:drawableStart="@drawable/arrow_right_24"
+                android:drawablePadding="10dp"
+                android:drawableTint="#E53935"
+                android:text="Category"
+                android:textAlignment="viewStart"
+                android:textColor="@color/accent" />
+
+            <Button
+                android:id="@+id/button8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/drop_down_24"
+                android:drawablePadding="10dp"
+                android:drawableTint="#43A047"
+                android:text="Select Category"
+                android:textAlignment="viewStart"
+                android:textColor="@color/accent" />
+
+            <Button
+                android:id="@+id/button9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/arrow_right_24"
+                android:drawablePadding="10dp"
+                android:drawableTint="#FFB300"
+                android:text="Channels"
+                android:textAlignment="viewStart"
+                android:textColor="@color/accent" />
+
+            <Button
+                android:id="@+id/button10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/drop_down_24"
+                android:drawablePadding="10dp"
+                android:drawableTint="#1E88E5"
+                android:text="Select Channels"
+                android:textAlignment="viewStart"
+                android:textColor="@color/accent" />
+
+            <Button
+                android:id="@+id/button11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:drawableLeft="@drawable/press_24"
+                android:drawablePadding="10dp"
+                android:drawableTint="#D81B60"
+                android:text="Select Item"
+                android:textAlignment="viewStart"
+                android:textColor="@color/accent" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- RecyclerView below the player -->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

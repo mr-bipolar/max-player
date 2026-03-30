@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mpv_media_player">mpv Media Player</string>
+    <string name="copyright_text">Copyright (C) mpv developers\nLicensed under GNU GPL v2 or later\n\nhttps://mpv.io\nhttps://github.com/mpv-player/mpv</string>
+    <string name="thanks_not">MAX Player v2.6+ is built using the open-source mpv media player and library. We thank the mpv community for their amazing work. ❤️</string>
+    <string name="about_player">MAX Player is a simple and powerful media player supporting online streams and local files.</string>
+    <string name="powered_by_mpv_media_player">Powered by mpv media player</string>
+</resources>

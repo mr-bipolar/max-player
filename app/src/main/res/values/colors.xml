@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="primary" type="color">#E429314C</item>
+    <item name="primary_dark" type="color">@color/primary</item>
+    <item name="accent" type="color">#D9ECFD</item>
+
+    <color name="colorAccent">#D38AE6</color>
+    <color name="colorSecondary">@color/white</color>
+    <color name="colorPrimaryText">#FFFFFF</color>
+    <color name="colorSecondaryText">#E2E1E1</color>
+    <color name="colorDivider">#E2E0E0</color>
+    <color name="colorBorder">#474646</color>
+    <color name="colorIcon">#6F6F6F</color>
+    <color name="colorCard">#FFFFFF</color>
+
+    <color name="tint_normal">#ffffff</color>
+    <color name="tint_disabled">#3c3c3c</color>
+
+    <color name="alpha_disabled">#85000000</color>
+    <color name="alpha24pct">#3c000000</color>
+    <color name="alpha12pct">#1e000000</color>
+
+    <color name="tint_btn_bg_nofocus">#00000000</color>
+    <color name="tint_btn_bg_focused">@color/accent</color>
+
+    <color name="tint_seekbar_bg">#8A8A8A</color>
+
+    <!-- 12% black in LIGHT THEME -->
+    <color name="nnf_light_separator_color">#1e000000</color>
+    <!-- 12% white in BLACK THEME -->
+    <color name="nnf_dark_separator_color">#1effffff</color>
+    <color name="button_color">#FFB300</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="white_lite">#78787E</color>
+
+    <color name="popup_background">#333333</color>
+    <color name="popup_text">#FFFFFF</color>
+
+    <color name="bg_color">#162C62</color>
+   <color name="header_color">#0D1B3D</color>
+    <color name="sub_header_color">#3949AB</color>
+    <color name="selector_color">#7CB342</color>
+    <color name="selector_color_active">#1E88E5</color>
+</resources>
