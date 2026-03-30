@@ -25,4 +25,4 @@ Thumbs.db
 app/build/
 
 # GDB (optional)
-.gdb_history
+.gdb_historyapp/src/main/obj/
