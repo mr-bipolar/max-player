@@ -44,10 +44,18 @@
         <item name="titleTextColor">@android:color/white</item>
     </style>
 
+    <style name="ToolbarTitleStyle"
+        parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:fontFamily">@font/inter_medium</item>
+        <item name="android:textColor">@android:color/white</item>
+
+    </style>
+
     <style name="AppTheme.Preference.AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="dialogCornerRadius">28dp</item>
         <item name="cornerFamily">rounded</item>
         <item name="android:colorBackground">?attr/colorSurface</item>
+
     </style>
 
 

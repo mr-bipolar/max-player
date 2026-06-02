@@ -53,7 +53,6 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import androidx.core.net.toUri
@@ -81,6 +80,11 @@ import com.aaronmaxlab.maxplayer.subclass.DeviceUtils
 import com.aaronmaxlab.maxplayer.subclass.GridSpacingItemDecoration
 import com.aaronmaxlab.maxplayer.subclass.SimpleM3UParser
 import com.aaronmaxlab.maxplayer.subclass.TvFocusHelper
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.OkHttpClient
@@ -239,6 +243,8 @@ class MPVActivity : AppCompatActivity(), MPVLib.EventObserver, TouchGesturesObse
 
     private lateinit var database: SqlDbHelper
 
+    private  var clickCount = 0
+    private var mInterstitialAd: InterstitialAd? = null
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -317,7 +323,6 @@ class MPVActivity : AppCompatActivity(), MPVLib.EventObserver, TouchGesturesObse
 
         binding = PlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
 
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
@@ -454,6 +459,7 @@ class MPVActivity : AppCompatActivity(), MPVLib.EventObserver, TouchGesturesObse
             }
 
         }else {
+            loadInterstitialAd()
             channelRecyclerView.apply {
                 layoutManager = GridLayoutManager(this@MPVActivity, 3)
                 addItemDecoration(GridSpacingItemDecoration(3, spacing, true))
@@ -762,6 +768,11 @@ class MPVActivity : AppCompatActivity(), MPVLib.EventObserver, TouchGesturesObse
 
         player.removeObserver(this)
         player.destroy()
+
+        if (mInterstitialAd != null) {
+            mInterstitialAd = null;
+        }
+
         super.onDestroy()
     }
     // unblock
@@ -2769,7 +2780,15 @@ class MPVActivity : AppCompatActivity(), MPVLib.EventObserver, TouchGesturesObse
     ) {
         m3uModel ?: return
         bookMark = m3uModel
+        clickCount++
         adapter.setSelectedPlaylistIndex(m3uModel.playlistIndex)
+
+        Log.d("F3max", clickCount.toString())
+        if(!isTV && clickCount >= 5) {
+            showInterstitialAd();
+            clickCount = 0;
+            loadInterstitialAd();
+        }
         MPVLib.setPropertyInt("playlist-pos", m3uModel.playlistIndex)
     }
 
@@ -2836,6 +2855,37 @@ class MPVActivity : AppCompatActivity(), MPVLib.EventObserver, TouchGesturesObse
             dialog.getWindow()?.setBackgroundDrawableResource(R.drawable.bg_stack_card);
         }
     }
+
+     // Show the interstitial ad
+    fun  showInterstitialAd() {
+         mInterstitialAd?.show(this)
+    }
+
+    // Load the interstitial ad
+    fun  loadInterstitialAd() {
+
+        InterstitialAd.load(
+            this,
+            "ca-app-pub-8534960367024610/5039614854",
+            AdRequest.Builder().build(),
+            object : InterstitialAdLoadCallback() {
+                override fun onAdLoaded(ad: InterstitialAd) {
+                    Log.d(TAG, "Ad was loaded.")
+                    mInterstitialAd = ad
+                }
+
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    Log.d(TAG, adError.message)
+                    mInterstitialAd = null
+                }
+            }
+        )
+
+
+    }
+
+
+
 
     companion object {
         private const val TAG = "maxplayer"

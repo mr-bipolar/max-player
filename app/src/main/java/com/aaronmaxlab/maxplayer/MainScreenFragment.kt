@@ -7,7 +7,9 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
@@ -55,17 +57,63 @@ class MainScreenFragment : Fragment(R.layout.fragment_main_screen) {
                 filePickerLauncher.launch(i)
             }
         }
-        filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (it.resultCode != Activity.RESULT_OK) {
+//        filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+//            if (it.resultCode != Activity.RESULT_OK) {
+//                return@registerForActivityResult
+//            }
+//            it.data?.getStringExtra("last_path")?.let { path ->
+//                lastPath = path
+//            }
+//            it.data?.getStringExtra("path")?.let { path ->
+//                playFile(path)
+//            }
+//        }
+
+        // fix android 10 redmi file pick
+        filePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode != Activity.RESULT_OK) {
                 return@registerForActivityResult
             }
-            it.data?.getStringExtra("last_path")?.let { path ->
+
+            result.data?.getStringExtra("last_path")?.let { path ->
                 lastPath = path
             }
-            it.data?.getStringExtra("path")?.let { path ->
-                playFile(path)
+
+            result.data?.getStringExtra("path")?.let { path ->
+                // ─── ANDROID 10 NATIVE STREAM TRANSLATION ENGINE ───
+                var finalMpvPath = path
+
+                // We only map content:// strings on Android 10 (API 29)
+                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q && path.startsWith("content://")) {
+                    try {
+                        val uri = Uri.parse(path)
+
+                        // Secure process ownership rights over the target stream data
+                        try {
+                            requireContext().contentResolver.takePersistableUriPermission(
+                                uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            )
+                        } catch (e: SecurityException) {
+                            // Already managed or fallback handled implicitly
+                        }
+
+                        // Map to a raw Unix system handle that libmpv can decode
+                        val pfd: ParcelFileDescriptor? = requireContext().contentResolver.openFileDescriptor(uri, "r")
+                        if (pfd != null) {
+                            val fd = pfd.detachFd()
+                            finalMpvPath = "fd://$fd" // Override destination target string
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("mpv", "Failed to resolve raw FD stream on Android 10: ${e.message}")
+                    }
+                }
+                // ──────────────────────────────────────────────────
+
+                // Pass the safe path (either original path or fd:// stream)
+                playFile(finalMpvPath)
             }
         }
+
         playerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             // we don't care about the result but remember that we've been here
             returningFromPlayer = true
