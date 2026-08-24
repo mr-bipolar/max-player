@@ -63,7 +63,7 @@ public class M3u8Adapter extends RecyclerView.Adapter<M3u8Adapter.M3u8ViewHolder
 
         Glide.with(context)
                 .load(m3uModel.getChannelLogo())
-                .placeholder(R.drawable.mpv_logo)
+                .placeholder(R.drawable.logo)
                 .into(holder.poster);
 
         holder.titleTxt.setText(m3uModel.getChannelName());

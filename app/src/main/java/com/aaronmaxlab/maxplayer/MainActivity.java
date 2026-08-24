@@ -3,6 +3,7 @@ package com.aaronmaxlab.maxplayer;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,24 +38,41 @@ import com.aaronmaxlab.maxplayer.preferences.AboutActivity;
 import com.aaronmaxlab.maxplayer.preferences.PreferenceActivity;
 import com.aaronmaxlab.maxplayer.subclass.DeviceUtils;
 import com.aaronmaxlab.maxplayer.subclass.TvFocusHelper;
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.appopen.AppOpenAd;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
+    ActivityMainBinding binding;
     private SqlDbHelper database;
     private List<PlaylistModel> playlists;
     private final PlaylistAdapter[] adapterRef = new PlaylistAdapter[1];
     private  DrawerLayout  drawerLayout;
     boolean isTv = false;
 
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
+    private static final String PREFS_NAME = "AppPrefs";
+    private static final String KEY_AD_SHOWN = "ad_shown";
+    private AppOpenAd appOpenAd;
+    private static final String APP_OPEN_AD_UNIT_ID = "ca-app-pub-8534960367024610/9545836071";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
 
-        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
+         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         isTv = DeviceUtils.isTv(this);
@@ -104,6 +123,21 @@ public class MainActivity extends AppCompatActivity {
                         v.getPaddingRight(),
                         v.getPaddingBottom()
                 );
+
+                return insets;
+            });
+
+            assert binding.m3uPlaylist != null;
+            ViewCompat.setOnApplyWindowInsetsListener(binding.m3uPlaylist, (view, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+                view.setPadding(
+                        view.getPaddingLeft(),
+                        view.getPaddingTop(),
+                        view.getPaddingRight(),
+                        systemBars.bottom
+                );
+
                 return insets;
             });
 
@@ -332,6 +366,51 @@ public class MainActivity extends AppCompatActivity {
             callPlaylist("News");
         });
 
+
+       if(!isTv) {
+
+           // google ads
+           MobileAds.initialize(this, initializationStatus -> {
+           });
+
+           AdRequest adRequest = new AdRequest.Builder().build();
+
+           assert binding.bannerAdView != null;
+           binding.bannerAdView.loadAd(adRequest);
+
+           binding.bannerAdView.setAdListener(new AdListener() {
+               @Override
+               public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                   super.onAdFailedToLoad(loadAdError);
+                   binding.bannerAdView.loadAd(adRequest);
+               }
+           });
+
+           try {
+               sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+               boolean isAdShows = sharedPreferences.getBoolean(KEY_AD_SHOWN, false);
+               if (!isAdShows) {
+                   // Start loading the ad
+                   AppOpenAd.load(this, APP_OPEN_AD_UNIT_ID, adRequest, new AppOpenAd.AppOpenAdLoadCallback() {
+                       @Override
+                       public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+
+                       }
+
+                       @Override
+                       public void onAdLoaded(@NonNull AppOpenAd appAd) {
+                           // Store the loaded ad and proceed to show it
+                           appOpenAd = appAd;
+                           showAppOpenAd();
+                       }
+                   });
+
+               }
+           } catch (Exception e) {
+               Log.d("Error", Objects.requireNonNull(e.getMessage()));
+           }
+       }
+
     }
 
 
@@ -359,6 +438,56 @@ public class MainActivity extends AppCompatActivity {
             adapterRef[0].notifyDataSetChanged();
         }
     }
+
+
+    // show ads
+    private void showAppOpenAd() {
+        if (appOpenAd != null && !sharedPreferences.getBoolean(KEY_AD_SHOWN, false)) {
+            appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    markAdAsShown();
+
+                }
+
+                @Override
+                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    markAdAsShown();
+                }
+
+                @Override
+                public void onAdShowedFullScreenContent() {
+                    markAdAsShown();
+                }
+            });
+
+            // Show the ad if it's loaded
+            appOpenAd.show(this);
+        }
+    }
+
+    private void markAdAsShown() {
+        try {
+            sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean(KEY_AD_SHOWN, true);
+            editor.apply();
+        } catch (Exception e) {
+            Log.d("Error", Objects.requireNonNull(e.getMessage()));
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        binding = null;
+    }
+
 
 }
 

@@ -172,7 +172,6 @@ public class DocumentPickerFragment extends AbstractFilePickerFragment<Uri> {
         final Uri root = mRoot;
         final Uri currentPath = mCurrentPath;
 
-        // totally makes sense!
         final String docId = currentPath.equals(root) ? DocumentsContract.getTreeDocumentId(currentPath) :
                 DocumentsContract.getDocumentId(currentPath);
         final Uri childUri = DocumentsContract.buildChildDocumentsUriUsingTree(root, docId);
@@ -186,41 +185,67 @@ public class DocumentPickerFragment extends AbstractFilePickerFragment<Uri> {
             @Override
             public List<Uri> loadInBackground() {
                 final ContentResolver contentResolver = getContext().getContentResolver();
-                Cursor c = contentResolver.query(childUri, cols, null, null, null, null);
+                Cursor c = null;
+                try {
+                    c = contentResolver.query(childUri, cols, null, null, null, null);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to query system document provider: " + e.getMessage());
+                    return new ArrayList<>(0);
+                }
+
                 if (c == null) {
                     return new ArrayList<>(0);
                 }
 
                 ArrayList<Document> files = new ArrayList<>();
-                final int i1 = c.getColumnIndex(cols[0]), i2 = c.getColumnIndex(cols[1]), i3 = c.getColumnIndex(cols[2]);
-                while (c.moveToNext()) {
-                    final String docId = c.getString(i1);
-                    final boolean isDir = c.getString(i2).equals(DocumentsContract.Document.MIME_TYPE_DIR);
-                    final Document doc = new Document(
-                            DocumentsContract.buildDocumentUriUsingTree(root, docId),
-                            isDir,
-                            c.getString(i3)
-                    );
-                    if (mFilterPredicate != null && !mFilterPredicate.test(doc))
-                        continue;
-                    files.add(doc);
 
-                    // There is no generic way to get a parent directory for another directory and this
-                    // can't be solved via mLastRead either, since by the time someone asks getParent()
-                    // we're already inside the new directory. Not to mention that this would be insufficient
-                    // when going back multiple times.
-                    if (isDir)
-                        mParents.put(docId, currentPath);
+                // SAFE ENTRY POINT: Dynamically lookup by column name string instead of static array order
+                final int idIdx = c.getColumnIndex(DocumentsContract.Document.COLUMN_DOCUMENT_ID);
+                final int mimeIdx = c.getColumnIndex(DocumentsContract.Document.COLUMN_MIME_TYPE);
+                final int nameIdx = c.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME);
+
+                // If Android 10 reordered or hidden columns break the index, exit safely instead of crashing
+                if (idIdx == -1 || mimeIdx == -1 || nameIdx == -1) {
+                    Log.e(TAG, "Critical columns missing from OS Cursor layout scheme on Android 10.");
+                    c.close();
+                    return new ArrayList<>(0);
+                }
+
+                while (c.moveToNext()) {
+                    try {
+                        final String docId = c.getString(idIdx);
+                        final String mimeType = c.getString(mimeIdx);
+                        final String displayName = c.getString(nameIdx);
+
+                        if (docId == null || mimeType == null) continue;
+
+                        final boolean isDir = mimeType.equals(DocumentsContract.Document.MIME_TYPE_DIR);
+                        final String safeName = displayName != null ? displayName : "Untitled File";
+
+                        final Document doc = new Document(
+                                DocumentsContract.buildDocumentUriUsingTree(root, docId),
+                                isDir,
+                                safeName
+                        );
+                        if (mFilterPredicate != null && !mFilterPredicate.test(doc))
+                            continue;
+                        files.add(doc);
+
+                        if (isDir)
+                            mParents.put(docId, currentPath);
+
+                    } catch (Exception rowException) {
+                        Log.w(TAG, "Skipping bad row data layout row processing: " + rowException.getMessage());
+                    }
                 }
                 c.close();
 
                 Collections.sort(files);
 
-                // extract the URIs because we (can) only return those
                 ArrayList<Uri> ret = new ArrayList<>(files.size());
                 for (Document doc : files)
                     ret.add(doc.uri);
-                // but keep the cached data
+
                 mLastRead.clear();
                 for (Document doc : files)
                     mLastRead.put(doc.uri, doc);
