@@ -84,14 +84,17 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
-
 import okhttp3.Call
+
+
 import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import kotlin.math.roundToInt
 
 typealias ActivityResultCallback = (Int, Intent?) -> Unit
@@ -619,112 +622,189 @@ class MPVActivity : AppCompatActivity(), MPVLib.EventObserver, TouchGesturesObse
 
     private fun fetchChannelList(source: String) {
 
+        showLoading()
 
-            showLoading()
-            loadingOverlay.post {
+        loadingOverlay.post {
 
-                fun handlePlaylist(playList: String) {
-                    val entries = SimpleM3UParser().parse(playList)
-                    allEntries.clear()
-                    allEntries.addAll(entries)
+            fun handlePlaylist(entries: ArrayList<SimpleM3UParser.M3U_Entry>) {
+                allEntries.clear()
+                allEntries.addAll(entries)
 
-                    val categories = mutableListOf("All")
+                val categories = mutableListOf("All")
 
-                    val groupTitles = entries
-                        .mapNotNull { it.groupTitle }
-                        .distinct()
+                val groupTitles = entries
+                    .mapNotNull { it.groupTitle }
+                    .distinct()
 
-                    categories.addAll(groupTitles)
+                categories.addAll(groupTitles)
 
-                    if (entries.any { it.groupTitle == null }) {
-                        categories.add("Others")
-                    }
-
-                    if (!::catAdapter.isInitialized) {
-                        catAdapter = CategoryAdapter(categories) { selectedCat ->
-                            filterChannels(selectedCat)
-                        }
-                        catRecyclerView.adapter = catAdapter
-                    } else {
-                        catAdapter.update(categories)
-                    }
-
-                    updatePlaylistVisibility()
-
-                    hideLoading()
+                if (entries.any { it.groupTitle == null }) {
+                    categories.add("Others")
                 }
 
-                when {
-
-                    //  HTTP / HTTPS
-                    source.startsWith("http") -> {
-                        val client = OkHttpClient()
-                        val request = Request.Builder().url(source).build()
-
-                        client.newCall(request).enqueue(object : Callback {
-
-                            override fun onFailure(call: Call, e: IOException) {
-                                runOnUiThread {
-                                    hideLoading()
-                                    Toast.makeText(
-                                        this@MPVActivity,
-                                        "Data Not Found",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            }
-
-                            override fun onResponse(call: Call, response: Response) {
-                                val playList = response.body?.string()
-                                runOnUiThread {
-                                    if (playList != null) {
-                                        handlePlaylist(playList)
-                                    } else {
-                                        hideLoading()
-                                    }
-                                }
-                            }
-                        })
+                if (!::catAdapter.isInitialized) {
+                    catAdapter = CategoryAdapter(categories) { selectedCat ->
+                        filterChannels(selectedCat)
                     }
+                    catRecyclerView.adapter = catAdapter
+                } else {
+                    catAdapter.update(categories)
+                }
 
-                    //  content://
-                    source.startsWith("content://") -> {
-                        try {
-                            val input = contentResolver.openInputStream(source.toUri())
-                            val playList = input?.bufferedReader()?.use { it.readText() }
+                updatePlaylistVisibility()
+                hideLoading()
+            }
 
-                            if (playList != null) {
-                                handlePlaylist(playList)
-                            } else {
-                                hideLoading()
-                            }
+            fun parsePlaylist(input: InputStream) {
+                try {
+                    val entries = SimpleM3UParser().parse(input)
 
-                        } catch (e: Exception) {
-                            hideLoading()
-                            Toast.makeText(this, "File read error", Toast.LENGTH_SHORT).show()
-                        }
+                    runOnUiThread {
+                        handlePlaylist(entries)
                     }
+                } catch (e: Exception) {
+                    runOnUiThread {
+                        hideLoading()
 
-                    //  FILE PATH
-                    else -> {
-                        try {
-                            val file = File(source)
-
-                            if (!file.exists()) {
-                                hideLoading()
-                                Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show()
-                                return@post
-                            }
-                            handlePlaylist(file.readText())
-
-                        } catch (e: Exception) {
-                            hideLoading()
-                            Toast.makeText(this, "Cannot read file", Toast.LENGTH_SHORT).show()
-                        }
+                        Toast.makeText(
+                            this@MPVActivity,
+                            "Playlist read error",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
 
+            when {
+
+                // HTTP / HTTPS
+                source.startsWith("http://") ||
+                        source.startsWith("https://") -> {
+
+                    val client = OkHttpClient()
+
+                    val request = Request.Builder()
+                        .url(source)
+                        .build()
+
+                    client.newCall(request).enqueue(object : Callback {
+
+                        override fun onFailure(
+                            call: Call,
+                            e: IOException
+                        ) {
+                            runOnUiThread {
+                                hideLoading()
+
+                                Toast.makeText(
+                                    this@MPVActivity,
+                                    "Data Not Found",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+
+                        override fun onResponse(
+                            call: Call,
+                            response: Response
+                        ) {
+
+                            if (!response.isSuccessful) {
+                                response.close()
+
+                                runOnUiThread {
+                                    hideLoading()
+                                }
+
+                                return
+                            }
+
+                            try {
+                                response.body?.byteStream()?.use { input ->
+                                    parsePlaylist(input)
+                                } ?: runOnUiThread {
+                                    hideLoading()
+                                }
+
+                            } catch (e: Exception) {
+
+                                runOnUiThread {
+                                    hideLoading()
+
+                                    Toast.makeText(
+                                        this@MPVActivity,
+                                        "Playlist read error",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+
+                            } finally {
+                                response.close()
+                            }
+                        }
+                    })
+                }
+
+                // content://
+                source.startsWith("content://") -> {
+
+                    try {
+
+                        contentResolver
+                            .openInputStream(source.toUri())
+                            ?.use { input ->
+                                parsePlaylist(input)
+                            }
+                            ?: hideLoading()
+
+                    } catch (e: Exception) {
+
+                        hideLoading()
+
+                        Toast.makeText(
+                            this,
+                            "File read error",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                // FILE PATH
+                else -> {
+
+                    try {
+
+                        val file = File(source)
+
+                        if (!file.exists()) {
+                            hideLoading()
+
+                            Toast.makeText(
+                                this,
+                                "File not found",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            return@post
+                        }
+
+                        file.inputStream().use { input ->
+                            parsePlaylist(input)
+                        }
+
+                    } catch (e: Exception) {
+
+                        hideLoading()
+
+                        Toast.makeText(
+                            this,
+                            "Cannot read file",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
     }
 
 
@@ -1451,9 +1531,25 @@ class MPVActivity : AppCompatActivity(), MPVLib.EventObserver, TouchGesturesObse
             dialog.dismiss()
             finishWithResult(RESULT_OK, true)
             // Local Db storage
-            val inserted = database.addM3uPlaylist(playlistName, psc.playlistCount , playlistUrl)
+
+            val inserted = database.addM3uPlaylist(
+                playlistName,
+                psc.playlistCount,
+                playlistUrl
+            )
+
             if (inserted) {
-                Toast.makeText(this, "Data Stored", Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                    this,
+                    "Data Stored",
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                Toast.makeText(
+                    this,
+                    "Playlist already exists",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
