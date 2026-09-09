@@ -61,17 +61,29 @@ public class SimpleM3UParser {
     // Parse m3u file by reading from inputstream
     public ArrayList<M3U_Entry> parse(InputStream inputStream) {
 
-        StringBuilder text = new StringBuilder();
-        String line = "";
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+        final AtomicReference<M3U_Entry> lastEntry =
+                new AtomicReference<>(null);
+
+        final ArrayList<M3U_Entry> entries =
+                new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(inputStream))) {
+
+            String line;
+
             while ((line = br.readLine()) != null) {
-                text.append(line);
-                text.append("\n");
+                try {
+                    parseLine(line, entries, lastEntry);
+                } catch (Exception e) {
+                    lastEntry.set(null);
+                }
             }
+
         } catch (Exception ignored) {
         }
 
-        return parse(text.toString());
+        return entries;
     }
 
     public ArrayList<M3U_Entry> parse(String text) {

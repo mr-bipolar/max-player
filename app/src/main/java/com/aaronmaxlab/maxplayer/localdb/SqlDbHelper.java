@@ -21,7 +21,7 @@ public class SqlDbHelper extends SQLiteOpenHelper {
 
     private final Context context;
     private static final String DatabaseName = "m3u8Library.db";
-    private static final int DatabaseVersion = 1;
+    private static final int DatabaseVersion = 2;
     private static final String TableName = "channels";
     private static final String TableCatName = "category";
     private static final String ColumnId = "id";
@@ -43,28 +43,31 @@ public class SqlDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase database) {
-         String query  = " CREATE TABLE if NOT EXISTS "+
-                 TableName        + " ( "     +
-                 ColumnId         + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                 ColumnTitle      + " TEXT, " +
-                 ColumnIcon       + " TEXT, " +
-                 ColumnUrl        + " TEXT, " +
-                 ColumnCategory   + " TEXT);";
-         database.execSQL(query);
+         database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS channels (" +
+                            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                            "channelName TEXT, " +
+                            "channelIcon TEXT, " +
+                            "channelUrl TEXT, " +
+                            "category TEXT" +
+                            ")"
+            );
 
-        String catQuery  = " CREATE TABLE if NOT EXISTS "+
-                TableCatName     + " ( "     +
-                ColumnId         + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                ColumnCategory   + " TEXT);";
-        database.execSQL(catQuery);
+         database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS category (" +
+                            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                            "category TEXT" +
+                            ")"
+            );
 
-        String playlistQuery = " CREATE TABLE if NOT EXISTS "+
-                TablePlaylist    + " ( " +
-                ColumnId         + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                PlaylistName     + " TEXT, " +
-                PlaylistUrl      + " TEXT UNIQUE, " +
-                PlaylistCount    + " INTEGER);";
-        database.execSQL(playlistQuery);
+         database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS playlist (" +
+                            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                            "playlistName TEXT, " +
+                            "playlistUrl TEXT UNIQUE, " +
+                            "playlistCount INTEGER" +
+                            ")"
+            );
 
         String catInsert = "INSERT INTO "+
                 TableCatName + "(" +
@@ -91,9 +94,22 @@ public class SqlDbHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase database, int i, int i1) {
-        database.execSQL("DROP TABLE IF EXISTS " + TableName);
-        onCreate(database);
+    public void onUpgrade(  SQLiteDatabase database,
+                            int oldVersion,
+                            int newVersion) {
+
+        if (oldVersion < 2) {
+
+            database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS playlist (" +
+                            "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                            "playlistName TEXT, " +
+                            "playlistUrl TEXT UNIQUE, " +
+                            "playlistCount INTEGER" +
+                            ")"
+            );
+        }
+
     }
 
    public boolean addChannel(String title, String icon, String url, String category){
@@ -111,6 +127,7 @@ public class SqlDbHelper extends SQLiteOpenHelper {
         }
 
     }
+
 
     void addCategory(String cName){
         long result;
@@ -278,7 +295,11 @@ public class SqlDbHelper extends SQLiteOpenHelper {
         return playlistList;
     }
 
-    public boolean addM3uPlaylist(String playlistName, int playlistCount, String playlistUrl) {
+    public boolean addM3uPlaylist(
+            String playlistName,
+            int playlistCount,
+            String playlistUrl
+    ) {
 
         try (SQLiteDatabase database = this.getWritableDatabase()) {
 
@@ -287,7 +308,12 @@ public class SqlDbHelper extends SQLiteOpenHelper {
             cv.put(PlaylistUrl, playlistUrl);
             cv.put(PlaylistCount, playlistCount);
 
-            long result = database.insert(TablePlaylist, null, cv);
+            long result = database.insertWithOnConflict(
+                    TablePlaylist,
+                    null,
+                    cv,
+                    SQLiteDatabase.CONFLICT_IGNORE
+            );
 
             return result != -1;
         }
